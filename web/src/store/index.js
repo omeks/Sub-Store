@@ -7,17 +7,21 @@ Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
         title: "Sub-Store",
-        isDarkMode: false,
         clipboard: "",
 
         successMessage: "",
         errorMessage: "",
+        snackbarTimer: "",
 
         subscriptions: {},
         collections: {},
+        artifacts: {},
         env: {},
-
-        settings: {}
+        settings: {
+            theme: {
+                darkMode: false
+            }
+        }
     },
 
     mutations: {
@@ -28,8 +32,9 @@ const store = new Vuex.Store({
         SET_NAV_TITLE(state, title) {
             state.title = title;
         },
-        SET_DARK_MODE(state, isDarkMode) {
-            state.isDarkMode = isDarkMode
+
+        SET_SNACK_BAR_TIMER(state, timer) {
+            state.snackbarTimer = timer;
         },
 
         SET_SUCCESS_MESSAGE(state, msg) {
@@ -40,6 +45,9 @@ const store = new Vuex.Store({
             state.errorMessage = msg;
         },
 
+        SET_DARK_MODE(state, on) {
+            state.settings.theme.darkMode = on;
+        }
     },
 
     actions: {
@@ -57,11 +65,27 @@ const store = new Vuex.Store({
                 state.collections = data;
             });
         },
+        async FETCH_ARTIFACTS({state}) {
+            return axios.get("/artifacts").then(resp => {
+                const {data} = resp.data;
+                state.artifacts = data;
+            });
+        },
         // fetch env
         async FETCH_ENV({state}) {
             return axios.get("/utils/env").then(resp => {
                 state.env = resp.data;
             })
+        },
+        async FETCH_SETTINGS({state}) {
+            return axios.get("/settings").then(resp => {
+                state.settings = {
+                    theme: {
+                        darkMode: false
+                    },
+                    ...resp.data
+                }
+            });
         },
         // update subscriptions
         async UPDATE_SUBSCRIPTION({dispatch}, {name, sub}) {
